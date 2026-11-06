@@ -4,7 +4,6 @@ numpy==1.26.4
 scipy==1.13.1
 scikit-learn==1.5.2
 sentence-transformers==3.0.1
-transformers==4.44.2
 gunicorn
 --extra-index-url https://download.pytorch.org/whl/cpu
 torch==2.4.0
