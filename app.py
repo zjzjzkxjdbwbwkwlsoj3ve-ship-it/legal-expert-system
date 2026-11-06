@@ -3,7 +3,6 @@ import pickle
 import numpy as np
 from sentence_transformers import SentenceTransformer
 from sklearn.metrics.pairwise import cosine_similarity
-from transformers import pipeline
 import os
 
 app = Flask(__name__)
@@ -25,12 +24,6 @@ def get_embedder():
         _embedder = SentenceTransformer('all-MiniLM-L6-v2')
     return _embedder
 
-def get_chatbot():
-    global _nlp_chatbot
-    if _nlp_chatbot is None:
-        from transformers import pipeline
-        _nlp_chatbot = pipeline("text2text-generation", model="google/flan-t5-base")
-    return _nlp_chatbot
 
 HTML_UI = """
 <!DOCTYPE html>
@@ -124,13 +117,7 @@ def analyze():
     matched_row = df.iloc[best_idx]
     
     # 4. Use Prebuilt NLP Model to interact with the user using the matched law
-    prompt = (
-        f"You are a helpful legal assistant. A user says: '{user_query}'. "
-        f"According to {matched_row['Section']}, the law states: {matched_row['Law_Text']} "
-        f"To solve this, they should: {matched_row['Action_Steps']}. "
-        f"Write a direct, supportive response explaining how this law protects them and what they should do:"
-    )
-    nlp_output = get_chatbot()(prompt, max_length=150, do_sample=False)[0]['generated_text']
+    nlp_output = f"Based on your description, this falls under {matched_row['Section']}. The law states: {matched_row['Law_Text']} We highly recommend you take the following action: {matched_row['Action_Steps']}"
     
     return jsonify({
         "category": matched_row['Category'],
