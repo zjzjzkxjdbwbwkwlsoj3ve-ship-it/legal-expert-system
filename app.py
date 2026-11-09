@@ -30,19 +30,251 @@ HTML_UI = """
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI Legal Advice Expert System</title>
     <style>
-        body { background-color: #0d1117; color: #c9d1d9; font-family: 'Segoe UI', sans-serif; margin: 0; padding: 30px; }
-        .container { max-width: 850px; margin: auto; background: #161b22; padding: 25px; border-radius: 12px; border: 1px solid #30363d; box-shadow: 0 4px 20px rgba(0,255,170,0.08); }
-        h1 { color: #00ffaa; margin-top: 0; text-align: center; }
-        p.sub { text-align: center; color: #8b949e; margin-bottom: 25px; }
-        textarea { width: 100%; height: 90px; background: #0d1117; color: #fff; border: 1px solid #30363d; border-radius: 8px; padding: 12px; font-size: 15px; box-sizing: border-box; }
-        button { width: 100%; margin-top: 12px; padding: 12px; background: #00ffaa; color: #0d1117; font-weight: bold; font-size: 16px; border: none; border-radius: 8px; cursor: pointer; transition: 0.2s; }
-        button:hover { background: #00cc88; }
-        .result-box { margin-top: 25px; padding: 18px; background: #0d1117; border-left: 4px solid #00ffaa; border-radius: 6px; display: none; }
-        .badge { display: inline-block; background: #1f6feb; color: #fff; padding: 4px 10px; border-radius: 4px; font-size: 12px; margin-right: 8px; }
-        .score { color: #00ffaa; font-weight: bold; }
-        .nlp-reply { font-size: 16px; line-height: 1.6; color: #e6edf3; background: #161b22; padding: 14px; border-radius: 8px; margin-top: 12px; border: 1px solid #30363d; }
+        :root {
+            --bg-main: #090d16;
+            --bg-card: rgba(22, 27, 34, 0.85);
+            --bg-inner: #0d1117;
+            --border-color: #30363d;
+            --accent: #00ffaa;
+            --accent-hover: #00cc88;
+            --accent-glow: rgba(0, 255, 170, 0.18);
+            --text-primary: #e6edf3;
+            --text-secondary: #8b949e;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: var(--bg-main);
+            background-image: 
+                radial-gradient(circle at 15% 15%, rgba(0, 255, 170, 0.06) 0%, transparent 35%),
+                radial-gradient(circle at 85% 85%, rgba(31, 111, 235, 0.07) 0%, transparent 35%);
+            color: var(--text-primary);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 40px 20px;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 820px;
+            margin: auto;
+            background: var(--bg-card);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            padding: 36px;
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6), 0 0 30px rgba(0, 255, 170, 0.05);
+            transition: all 0.3s ease;
+        }
+
+        h1 {
+            color: #ffffff;
+            background: linear-gradient(90deg, #ffffff, var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-top: 0;
+            margin-bottom: 8px;
+            text-align: center;
+            font-size: clamp(1.6rem, 4vw, 2.25rem);
+            font-weight: 800;
+            letter-spacing: -0.5px;
+        }
+
+        p.sub {
+            text-align: center;
+            color: var(--text-secondary);
+            margin-top: 0;
+            margin-bottom: 28px;
+            font-size: clamp(0.875rem, 2vw, 1rem);
+            letter-spacing: 0.2px;
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 120px;
+            background: var(--bg-inner);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 16px;
+            font-size: 15px;
+            line-height: 1.5;
+            font-family: inherit;
+            resize: vertical;
+            transition: border-color 0.25s ease, box-shadow 0.25s ease;
+        }
+
+        textarea::placeholder {
+            color: #586069;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-glow);
+        }
+
+        button {
+            width: 100%;
+            margin-top: 16px;
+            padding: 15px 24px;
+            background: linear-gradient(135deg, #00ffaa 0%, #00d68f 100%);
+            color: #06130e;
+            font-weight: 700;
+            font-size: 16px;
+            letter-spacing: 0.3px;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
+            box-shadow: 0 4px 15px rgba(0, 255, 170, 0.25);
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 255, 170, 0.35);
+            filter: brightness(1.05);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .result-box {
+            margin-top: 30px;
+            padding: 24px;
+            background: var(--bg-inner);
+            border: 1px solid var(--border-color);
+            border-left: 4px solid var(--accent);
+            border-radius: 12px;
+            display: none;
+            animation: slideFadeIn 0.35s ease-out forwards;
+        }
+
+        @keyframes slideFadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .result-box > div:first-child {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 10px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid rgba(48, 54, 61, 0.6);
+            margin-bottom: 16px;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            background: rgba(31, 111, 235, 0.15);
+            color: #58a6ff;
+            border: 1px solid rgba(88, 166, 255, 0.3);
+            padding: 6px 12px;
+            border-radius: 999px;
+            font-size: 12.5px;
+            font-weight: 600;
+            letter-spacing: 0.3px;
+            margin-right: 0;
+        }
+
+        #secBadge {
+            background: rgba(137, 87, 229, 0.15) !important;
+            color: #d2a8ff !important;
+            border: 1px solid rgba(188, 140, 255, 0.3) !important;
+        }
+
+        .score {
+            color: var(--accent);
+            font-weight: 700;
+            font-size: 13px;
+            margin-left: auto;
+            background: rgba(0, 255, 170, 0.1);
+            border: 1px solid rgba(0, 255, 170, 0.25);
+            padding: 6px 12px;
+            border-radius: 999px;
+        }
+
+        .result-box h3,
+        .result-box h4 {
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            margin-top: 20px;
+            margin-bottom: 8px;
+        }
+
+        .nlp-reply {
+            font-size: 15.5px;
+            line-height: 1.7;
+            color: var(--text-primary);
+            background: #161b22;
+            padding: 18px;
+            border-radius: 10px;
+            margin-top: 10px;
+            border: 1px solid var(--border-color);
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        #rawLaw {
+            background: rgba(255, 255, 255, 0.02);
+            padding: 12px 14px;
+            border-radius: 8px;
+            border-left: 3px solid #8b949e;
+            line-height: 1.6;
+            font-size: 14.5px;
+        }
+
+        #actionStep {
+            background: rgba(63, 185, 80, 0.08);
+            border: 1px solid rgba(63, 185, 80, 0.25);
+            color: #e6edf3;
+            padding: 12px 14px;
+            border-radius: 8px;
+            line-height: 1.6;
+            font-size: 15px;
+        }
+
+        /* Responsive Mobile Layout */
+        @media (max-width: 600px) {
+            body {
+                padding: 16px 12px;
+                align-items: flex-start;
+            }
+            .container {
+                padding: 22px 18px;
+                border-radius: 14px;
+            }
+            .result-box {
+                padding: 18px 14px;
+            }
+            .score {
+                margin-left: 0;
+            }
+            button {
+                padding: 14px 18px;
+                font-size: 15px;
+            }
+        }
     </style>
 </head>
 <body>
